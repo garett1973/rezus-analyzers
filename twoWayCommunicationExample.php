@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\Maglumi_4000_Plus;
-
 $serverSocket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 $ipAddress = '127.0.0.1'; // Replace with your desired IP address
 $port = 12000; // Replace with your desired port
@@ -13,13 +11,21 @@ echo "Server listening on $ipAddress:$port\n";
 
 // List of allowed IP addresses
 $allowedIPs = ['127.0.0.1', '192.168.1.100']; // Add more as needed
-
+$i = 0; // Counter for the number of clients connected
 while (true) {
+
+    // check how many clients are connected
+    if ($i >= 10) {
+        echo "Maximum number of clients reached. Closing server socket.\n";
+        break;
+    }
+
     $clientSocket = socket_accept($serverSocket);
     $clientIP = socket_getpeername($clientSocket, $clientPort);
 
     if (in_array($clientIP, $allowedIPs)) {
         echo "New client connected from $clientIP.\n";
+        $i++;
 
         // Read data from the client as hexadecimal string
         $receivedData = socket_read($clientSocket, 1024); // Read data from the socket
@@ -47,10 +53,12 @@ while (true) {
         } else {
             echo "Unauthorized client connection from $clientIP. Closing socket.\n";
             socket_close($clientSocket);
+            break;
         }
     } else {
         echo "Unauthorized client connection from $clientIP. Closing socket.\n";
         socket_close($clientSocket);
+        break;
     }
 }
 
