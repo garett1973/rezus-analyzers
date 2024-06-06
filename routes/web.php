@@ -1,14 +1,13 @@
 <?php
 
-use App\Http\Controllers\CommunicationController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\OrderProcessController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/connect', [CommunicationController::class, 'connect'])->name('connect');
+Route::get('/order', [OrderProcessController::class, 'processOrder'])->name('order-process');
+//Route::get('/add-analyzer', [AdminController::class, 'addAnalyzer'])->name('add-analyzer');
 
-Route::get('/send-order-info-request/{orderNumber}', [CommunicationController::class, 'sendOrderInfoRequest'])->name('send-order-info-request');
-Route::get('/get-request-from-mednet', [CommunicationController::class, 'getRequestFromMednet'])->name('get-request-from-mednet');
-Route::get('/send-response-to-mednet', [CommunicationController::class, 'sendResponseToMednet'])->name('send-response-to-mednet');

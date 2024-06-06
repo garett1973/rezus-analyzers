@@ -59,27 +59,62 @@ class Maglumi_4000_Plus extends Model
     //R|1|^^^Ferritin|27.1|ng/ml|7 to 425|N||||||20240509160518
     //L|1|N
 
-    public function sendOrderInfoRequest(string $orderNumber): string
-    {
-        $request = self::ANALYZER_HEADER . date('Ymd') . PHP_EOL;
-        $request .= self::ORDER_INFO_REQUEST_START . $orderNumber . self::ORDER_INFO_REQUEST_END . PHP_EOL;
-        $request .= self::MESSAGE_TERMINATOR;
-        return $request;
-    }
+//    public function sendOrderInfoRequest(string $orderNumber): string
+//    {
+//        $request = self::ANALYZER_HEADER . date('Ymd') . PHP_EOL;
+//        $request .= self::ORDER_INFO_REQUEST_START . $orderNumber . self::ORDER_INFO_REQUEST_END . PHP_EOL;
+//        $request .= self::MESSAGE_TERMINATOR;
+//        return $request;
+//    }
+//
+//    public function sendOrderInfoResponse(string $orderNumber, array $tests, string $patientSex = 'U', string $patientName = 'nenustatyta^nenustatyta'): string
+//    {
+//        $response = self::ANALYZER_HEADER_MIN . PHP_EOL;
+//        $response .= self::ORDER_INFO_RESPONSE_PATIENT_START . $orderNumber . self::DOUBLE_SEPARATOR . $patientName . self::TRIPLE_SEPARATOR . $patientSex . PHP_EOL;
+//        $response .= self::ORDER_INFO_RESPONSE_ORDER_START . $orderNumber . self::DOUBLE_SEPARATOR;
+//        foreach ($tests as $key => $value) {
+//            $response .= $value;
+//            if ($key < count($tests) - 1) {
+//                $response .= '\^^^';
+//            }
+//        }
+//        $response .= PHP_EOL;
+//        $response .= self::MESSAGE_TERMINATOR;
+//        return $response;
+//    }
 
-    public function sendOrderInfoResponse(string $orderNumber, array $orderInfo, string $patientSex = 'F', string $patientName = 'nenustatyta^nenustatyta'): string
+
+
+    public function convertMednetOrderToAnalyzerOrder(array $mednetOrder): string
     {
+        $orderNumber = $mednetOrder['barcode'];
+        $tests = explode(',', $mednetOrder['test_id']);
+        $analyzer_tests = [];
+        foreach ($tests as $test) {
+            $analyzer_test = Test::where('test_id', $test)
+                ->where('is_active', 1)
+                ->first()
+                ->name_for_analyzer;
+            if (!$analyzer_test) {
+                return 'Test ' . $test . ' exchange code not found';
+            }
+            $analyzer_tests[] = $analyzer_test;
+        }
+        $patientSex = 'U';
+        $patientName = 'Undefined^Undefined';
+
         $response = self::ANALYZER_HEADER_MIN . PHP_EOL;
         $response .= self::ORDER_INFO_RESPONSE_PATIENT_START . $orderNumber . self::DOUBLE_SEPARATOR . $patientName . self::TRIPLE_SEPARATOR . $patientSex . PHP_EOL;
         $response .= self::ORDER_INFO_RESPONSE_ORDER_START . $orderNumber . self::DOUBLE_SEPARATOR;
-        foreach ($orderInfo as $key => $value) {
+        foreach ($analyzer_tests as $key => $value) {
             $response .= $value;
-            if ($key < count($orderInfo) - 1) {
+            if ($key < count($tests) - 1) {
                 $response .= '\^^^';
             }
         }
         $response .= PHP_EOL;
         $response .= self::MESSAGE_TERMINATOR;
+
         return $response;
     }
 
