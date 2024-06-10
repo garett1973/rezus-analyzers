@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Maglumi_4000_Plus;
+use App\Models\Analyzers\Maglumi_4000_Plus;
 use App\Models\RequestFromMednet;
 use App\Models\ResponseToMednet;
 use Aranyasen\Exceptions\HL7ConnectionException;
